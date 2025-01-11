@@ -10,15 +10,15 @@ class Stopwatch extends StatefulWidget {
 
 class _StopwatchState extends State<Stopwatch> {
   late Timer _timer;
-  int _elapsedSeconds = 0;
+  int _elapsedMilliseconds = 0; // Changed from seconds to milliseconds
   bool _isRunning = false;
 
   // Start the stopwatch
   void _startTimer() {
     if (!_isRunning) {
-      _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      _timer = Timer.periodic(const Duration(milliseconds: 10), (timer) {
         setState(() {
-          _elapsedSeconds++;
+          _elapsedMilliseconds += 10;
         });
       });
       setState(() {
@@ -43,7 +43,7 @@ class _StopwatchState extends State<Stopwatch> {
       _timer.cancel();
     }
     setState(() {
-      _elapsedSeconds = 0;
+      _elapsedMilliseconds = 0; // Reset to 0
       _isRunning = false;
     });
   }
@@ -58,9 +58,10 @@ class _StopwatchState extends State<Stopwatch> {
 
   @override
   Widget build(BuildContext context) {
-    final int hours = _elapsedSeconds ~/ 3600;
-    final int minutes = (_elapsedSeconds % 3600) ~/ 60;
-    final int seconds = _elapsedSeconds % 60;
+    final int hours = _elapsedMilliseconds ~/ (3600 * 1000);
+    final int minutes = (_elapsedMilliseconds % (3600 * 1000)) ~/ (60 * 1000);
+    final int seconds = (_elapsedMilliseconds % (60 * 1000)) ~/ 1000;
+    final int milliseconds = _elapsedMilliseconds % 1000;
 
     return Scaffold(
       appBar: AppBar(
@@ -69,13 +70,21 @@ class _StopwatchState extends State<Stopwatch> {
           "Stopwatch",
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(4.0), // Height of the border
+          child: Container(
+            color: Colors.grey, // Border color
+            height: 2.0,        // Border thickness
+          ),
+        ),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            // Display time with milliseconds
             Text(
-              '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}',
+              '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}.${milliseconds.toString().padLeft(3, '0')}',
               style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 50),
@@ -103,13 +112,13 @@ class _StopwatchState extends State<Stopwatch> {
                         horizontal: 20, vertical: 10),
                   ),
                   child: const Text(
-                    "Stop", // Fixed text
+                    "Stop",
                     style: TextStyle(
                       fontSize: 20,
                     ),
                   ),
                 ),
-                const SizedBox(width: 20), // Added spacing for better UI
+                const SizedBox(width: 20),
                 ElevatedButton(
                   onPressed: _resetTimer,
                   style: ElevatedButton.styleFrom(
